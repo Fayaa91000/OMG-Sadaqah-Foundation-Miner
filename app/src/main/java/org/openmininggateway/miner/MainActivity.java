@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     private android.widget.Spinner threadSelector;
     private int selectedThreads = 3;
     private EditText wallet;
+    private android.widget.CheckBox sadaqahConsent;
     private Button start;
     private Button stop;
 
@@ -164,6 +165,18 @@ public class MainActivity extends Activity {
         countdown.setPadding(0, 16, 0, 16);
         layout.addView(countdown);
 
+
+        sadaqahConsent =
+            new android.widget.CheckBox(this);
+        sadaqahConsent.setText(
+            "I agree: 9 hours mining for my wallet and " +
+            "1 hour for the Gaza Sadaqah wallet during " +
+            "a full 10-hour session (90% / 10% mining time). " +
+            "Rewards and shares are not guaranteed."
+        );
+        sadaqahConsent.setTextColor(Color.WHITE);
+        layout.addView(sadaqahConsent);
+
         start = new Button(this);
         start.setText("START MINING");
         start.setTextColor(Color.WHITE);
@@ -227,6 +240,13 @@ public class MainActivity extends Activity {
 
 
     private void beginMining() {
+        if (!sadaqahConsent.isChecked()) {
+            status.setText(
+                "Please accept the Sadaqah mining allocation."
+            );
+            return;
+        }
+
         String address = wallet.getText().toString().trim();
 
         if (address.length() < 90 || address.contains(" ")) {
