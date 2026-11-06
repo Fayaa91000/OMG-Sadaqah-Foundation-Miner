@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends Activity {
 
-    private static final long MAX_SESSION_MS = 7200000L;
+    private static final long MAX_SESSION_MS = SadaqahConfig.TOTAL_SESSION_MS;
 
     private static final Pattern SPEED =
         Pattern.compile("speed\\s+10s/60s/15m\\s+(\\S+)");
@@ -158,7 +158,7 @@ public class MainActivity extends Activity {
         layout.addView(status);
 
         countdown = new TextView(this);
-        countdown.setText("Session duration: 02:00:00");
+        countdown.setText("Session duration: 10:00:00");
         countdown.setTextColor(Color.WHITE);
         countdown.setTextSize(20);
         countdown.setGravity(Gravity.CENTER);
@@ -278,7 +278,7 @@ public class MainActivity extends Activity {
                 .putString("hashrate", "Waiting")
                 .putInt("shares", 0)
                 .putInt("threads", threads)
-                .putLong("remaining", 7200000L)
+                .putLong("remaining", SadaqahConfig.TOTAL_SESSION_MS)
                 .apply();
 
             startForegroundService(intent);
@@ -346,7 +346,7 @@ public class MainActivity extends Activity {
                 seconds % 60
             ));
         } else {
-            countdown.setText("Session duration: 02:00:00");
+            countdown.setText("Session duration: 10:00:00");
         }
     }
 

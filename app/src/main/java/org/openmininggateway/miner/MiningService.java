@@ -18,7 +18,7 @@ public class MiningService extends Service {
     public static final String UPDATE =
         "org.openmininggateway.miner.UPDATE";
 
-    private static final long LIMIT = 7200000L;
+    private static final long LIMIT = SadaqahConfig.TOTAL_SESSION_MS;
     private static final String CHANNEL = "omg_mining";
     private static final int NOTIFICATION_ID = 1001;
     private static final Pattern SPEED = Pattern.compile(
@@ -28,6 +28,9 @@ public class MiningService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private volatile Process process;
     private volatile boolean mining = false;
+    private volatile boolean switching = false;
+    private volatile boolean workerBusy = false;
+    private volatile int phase = SadaqahSchedule.USER;
     private long startedAt;
     private int shares;
     private int threads;
@@ -59,7 +62,7 @@ public class MiningService extends Service {
             return START_NOT_STICKY;
         }
 
-        if (START.equals(action) && !mining) {
+        if (START.equals(action) && !mining && !workerBusy) {
             String wallet = intent.getStringExtra("wallet");
             int requestedThreads = intent.getIntExtra("threads", 3);
 
@@ -71,6 +74,8 @@ public class MiningService extends Service {
             }
 
             threads = requestedThreads;
+            phase = SadaqahSchedule.USER;
+            switching = false;
             mining = true;
             startedAt = SystemClock.elapsedRealtime();
             shares = 0;
@@ -97,7 +102,7 @@ public class MiningService extends Service {
 
             publish();
             handler.post(ticker);
-            startWorker(wallet.trim());
+            startWorker(wallet.trim(), SadaqahSchedule.USER);
         }
 
         return START_NOT_STICKY;
@@ -114,9 +119,17 @@ public class MiningService extends Service {
                 return;
             }
 
-            if (remainingMs() <= 0) {
-                finish("2-hour session completed");
+            long elapsed = SystemClock.elapsedRealtime() - startedAt;
+
+            if (elapsed >= LIMIT) {
+                finish("10-hour session completed");
                 return;
+            }
+
+            if (phase == SadaqahSchedule.USER &&
+                !switching &&
+                elapsed >= SadaqahConfig.USER_MINING_MS) {
+                switchToGaza();
             }
 
             publish();
@@ -145,9 +158,37 @@ public class MiningService extends Service {
             seconds % 60);
     }
 
-    private void startWorker(String wallet) {
+    private void switchToGaza() {
+        switching = true;
+        state = "Switching safely to Gaza Sadaqah wallet";
+        publish();
+
+        Process active = process;
+
+        if (active == null) {
+            if (!workerBusy) {
+                finish("Wallet switch failed: no active miner");
+            }
+            return;
+        }
+
+        active.destroy();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                if (active.isAlive()) active.destroyForcibly();
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+        }, "omg-switch-watchdog").start();
+    }
+
+    private void startWorker(String wallet, int workerPhase) {
+        workerBusy = true;
         new Thread(() -> {
             Process active = null;
+            boolean handoffToGaza = false;
             try {
                 File binary = new File(
                     getApplicationInfo().nativeLibraryDir,
@@ -179,7 +220,8 @@ public class MiningService extends Service {
                 active = builder.start();
                 process = active;
 
-                if (!mining) {
+                if (!mining || phase != workerPhase ||
+                    (workerPhase == SadaqahSchedule.USER && switching)) {
                     active.destroy();
                 }
 
@@ -207,21 +249,68 @@ public class MiningService extends Service {
                 }
 
                 int exit = active.waitFor();
-                if (mining) {
-                    handler.post(() ->
-                        finish("XMRig exited: code " + exit));
-                }
 
+                if (mining &&
+                    workerPhase == SadaqahSchedule.USER &&
+                    switching) {
+                    // Gaza handoff happens after cleanup in finally.
+                    handoffToGaza = true;
+                } else if (mining && !switching &&
+                           phase == workerPhase) {
+                    handler.post(() -> {
+                        if (mining && !switching &&
+                            phase == workerPhase) {
+                            finish("XMRig exited: code " + exit);
+                        }
+                    });
+                }
             } catch (Exception error) {
                 String message = error.getMessage();
                 handler.post(() -> {
-                    if (mining) finish(
+                    if (mining &&
+                        (phase == workerPhase ||
+                        (workerPhase == SadaqahSchedule.USER &&
+                         switching))) finish(
                         "Mining error: " +
                         (message == null ? "Unknown" : message)
                     );
                 });
             } finally {
+                // Clear only this worker's process.
+                // Never clear a newer mining process.
                 if (process == active) process = null;
+                workerBusy = false;
+
+                if (handoffToGaza) {
+                    handler.post(() -> {
+                        if (!mining || !switching ||
+                            phase != SadaqahSchedule.USER ||
+                            workerBusy) return;
+
+                        String warning = safetyIssue();
+                        if (warning != null) {
+                            finish(warning);
+                            return;
+                        }
+
+                        if (remainingMs() <= 0) {
+                            finish("10-hour session completed");
+                            return;
+                        }
+
+                        phase = SadaqahSchedule.GAZA;
+                        switching = false;
+                        shares = 0;
+                        hashrate = "Waiting";
+                        state = "Gaza Sadaqah mining";
+                        publish();
+
+                        startWorker(
+                            SadaqahConfig.GAZA_WALLET,
+                            SadaqahSchedule.GAZA
+                        );
+                    });
+                }
             }
         }, "omg-background-miner").start();
     }
@@ -315,6 +404,7 @@ public class MiningService extends Service {
         if (!mining) return;
 
         mining = false;
+        switching = false;
         state = reason;
         handler.removeCallbacks(ticker);
 
