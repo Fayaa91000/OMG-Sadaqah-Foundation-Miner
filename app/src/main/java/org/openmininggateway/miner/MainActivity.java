@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
     private int selectedThreads = 3;
     private EditText wallet;
     private android.widget.CheckBox sadaqahConsent;
+    private android.widget.CheckBox smartMining;
     private Button start;
     private Button stop;
 
@@ -67,7 +68,7 @@ public class MainActivity extends Activity {
         layout.addView(logo, logoParams);
 
         TextView title = new TextView(this);
-        title.setText("OMG MINER");
+        title.setText("OMG SADAQAH MINER");
         title.setTextSize(28);
         title.setTextColor(Color.WHITE);
         layout.addView(title);
@@ -76,7 +77,7 @@ public class MainActivity extends Activity {
         information.setText(
             "\nMonero (RandomX Light) | HashVault TLS\n" +
             "CPU mining uses battery and may heat your phone.\n" +
-            "Mining stops if this screen closes.\n"
+            "Mining continues through the visible foreground service.\n"
         );
         information.setGravity(Gravity.CENTER);
         information.setTextColor(Color.LTGRAY);
@@ -123,8 +124,40 @@ public class MainActivity extends Activity {
             }
         });
 
+        Button walletGuide = new Button(this);
+        walletGuide.setText("GET MONERO WALLET - GUIDE");
+        layout.addView(walletGuide);
+
+        walletGuide.setOnClickListener(v ->
+            new android.app.AlertDialog.Builder(this)
+                .setTitle("How to get your Monero wallet")
+                .setMessage(
+                    "1. Choose Cake Wallet or Monero.com Wallet.\n" +
+                    "2. Install it from its official source.\n" +
+                    "3. Create a Monero (XMR) wallet.\n" +
+                    "4. Back up your recovery phrase privately.\n" +
+                    "5. Open Receive and copy your XMR address.\n" +
+                    "6. Return to OMG and tap PASTE WALLET ADDRESS.\n\n" +
+                    "Never share your recovery phrase or private keys."
+                )
+                .setPositiveButton("Cake Wallet", (d, w) ->
+                    startActivity(new android.content.Intent(
+                        android.content.Intent.ACTION_VIEW,
+                        android.net.Uri.parse("https://cakewallet.com/install/")
+                    ))
+                )
+                .setNeutralButton("Monero.com", (d, w) ->
+                    startActivity(new android.content.Intent(
+                        android.content.Intent.ACTION_VIEW,
+                        android.net.Uri.parse("https://monero.com/wallets")
+                    ))
+                )
+                .setNegativeButton("Close", null)
+                .show()
+        );
+
         TextView threadLabel = new TextView(this);
-        threadLabel.setText("CPU threads (1–6, default 3)");
+        threadLabel.setText("Choose CPU threads (1–6, default 3)");
         threadLabel.setTextColor(Color.WHITE);
         threadLabel.setTextSize(16);
         layout.addView(threadLabel);
@@ -134,7 +167,7 @@ public class MainActivity extends Activity {
 
         String[] threadOptions = new String[cpuLimit];
         for (int i = 0; i < cpuLimit; i++) {
-            threadOptions[i] = (i + 1) + " threads";
+            threadOptions[i] = (i + 1) + ((i == 0) ? " thread" : " threads");
         }
 
         threadSelector = new android.widget.Spinner(this);
@@ -145,8 +178,31 @@ public class MainActivity extends Activity {
                 threadOptions
             );
         threadSelector.setAdapter(adapter);
+        threadSelector.setBackgroundColor(Color.WHITE);
+        threadSelector.setPadding(12, 8, 12, 8);
         threadSelector.setSelection(Math.min(2, cpuLimit - 1));
         layout.addView(threadSelector);
+
+        smartMining = new android.widget.CheckBox(this);
+        smartMining.setText(
+            "SMART MINING - Conservative CPU preset (up to 2 threads)"
+        );
+        smartMining.setTextColor(Color.WHITE);
+        smartMining.setTextSize(15);
+        smartMining.setButtonTintList(
+            android.content.res.ColorStateList.valueOf(
+                Color.rgb(25, 210, 145)
+            )
+        );
+        smartMining.setPadding(12, 14, 12, 14);
+        layout.addView(smartMining);
+
+        smartMining.setOnCheckedChangeListener((button, checked) -> {
+            if (checked) {
+                threadSelector.setSelection(Math.min(1, cpuLimit - 1));
+            }
+            threadSelector.setEnabled(!checked);
+        });
 
         status = new TextView(this);
         status.setText(
@@ -158,7 +214,7 @@ public class MainActivity extends Activity {
         layout.addView(status);
 
         countdown = new TextView(this);
-        countdown.setText("Session duration: 10:00:00");
+        countdown.setText("Session duration: 04:00:00");
         countdown.setTextColor(Color.WHITE);
         countdown.setTextSize(20);
         countdown.setGravity(Gravity.CENTER);
@@ -169,12 +225,23 @@ public class MainActivity extends Activity {
         sadaqahConsent =
             new android.widget.CheckBox(this);
         sadaqahConsent.setText(
-            "I agree: 9 hours mining for my wallet and " +
+            "I AGREE TO THE GAZA SADAQAH PROGRAM:\n" +
+            "3 hours mining for my wallet and " +
             "1 hour for the Gaza Sadaqah wallet during " +
-            "a full 10-hour session (90% / 10% mining time). " +
+            "a full 4-hour session (75% / 25% mining time). " +
             "Rewards and shares are not guaranteed."
         );
         sadaqahConsent.setTextColor(Color.WHITE);
+        sadaqahConsent.setTextSize(15);
+        sadaqahConsent.setButtonTintList(
+            android.content.res.ColorStateList.valueOf(
+                Color.rgb(25, 210, 145)
+            )
+        );
+        sadaqahConsent.setPadding(12, 16, 12, 16);
+        sadaqahConsent.setBackgroundColor(
+            Color.rgb(30, 48, 57)
+        );
         layout.addView(sadaqahConsent);
 
         start = new Button(this);
@@ -193,21 +260,6 @@ public class MainActivity extends Activity {
         stop.setOnClickListener(
             v -> stopMining("Stopped by user")
         );
-
-        Button github = new Button(this);
-        github.setText("OMG GitHub");
-        layout.addView(github);
-
-        github.setOnClickListener(v -> {
-            android.content.Intent intent =
-                new android.content.Intent(
-                    android.content.Intent.ACTION_VIEW,
-                    android.net.Uri.parse(
-                        "https://github.com/Fayaa91000/OMG-Android-Miner"
-                    )
-                );
-            startActivity(intent);
-        });
 
         Button earnings = new Button(this);
         earnings.setText("CHECK MINING EARNINGS");
@@ -292,6 +344,7 @@ public class MainActivity extends Activity {
             stop.setEnabled(true);
             wallet.setEnabled(false);
             threadSelector.setEnabled(false);
+            smartMining.setEnabled(false);
             status.setText("Starting background mining...");
         } catch (Exception ex) {
             status.setText(
@@ -322,16 +375,21 @@ public class MainActivity extends Activity {
         );
         int shares = prefs.getInt("shares", 0);
         int threads = prefs.getInt("threads", 3);
+        String phaseText = prefs.getString(
+            "phaseText", "Your mining session"
+        );
         long remaining = prefs.getLong("remaining", 0L);
 
         start.setEnabled(!active);
         stop.setEnabled(active);
         wallet.setEnabled(!active);
-        threadSelector.setEnabled(!active);
+        threadSelector.setEnabled(!active && !smartMining.isChecked());
+        smartMining.setEnabled(!active);
 
         status.setText(
             (active ? "Mining (" + threads + " threads)"
                     : message) +
+            (active ? "\n" + phaseText : "") +
             "\nHashrate: " + hashrate +
             "\nAccepted shares: " + shares
         );
@@ -346,7 +404,7 @@ public class MainActivity extends Activity {
                 seconds % 60
             ));
         } else {
-            countdown.setText("Session duration: 10:00:00");
+            countdown.setText("Session duration: 04:00:00");
         }
     }
 

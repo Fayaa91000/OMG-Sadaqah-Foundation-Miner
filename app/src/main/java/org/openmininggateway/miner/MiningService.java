@@ -122,7 +122,7 @@ public class MiningService extends Service {
             long elapsed = SystemClock.elapsedRealtime() - startedAt;
 
             if (elapsed >= LIMIT) {
-                finish("10-hour session completed");
+                finish("4-hour session completed");
                 return;
             }
 
@@ -294,7 +294,7 @@ public class MiningService extends Service {
                         }
 
                         if (remainingMs() <= 0) {
-                            finish("10-hour session completed");
+                            finish("4-hour session completed");
                             return;
                         }
 
@@ -356,8 +356,8 @@ public class MiningService extends Service {
                 BatteryManager.EXTRA_TEMPERATURE, -1);
 
             if (level >= 0 && scale > 0 &&
-                level * 100 / scale < 20) {
-                return "Safety stop: battery below 20%";
+                level * 100 / scale < 10) {
+                return "Safety stop: battery below 10%";
             }
 
             if (temp >= 430) {
@@ -386,6 +386,12 @@ public class MiningService extends Service {
         update.putExtra("hashrate", hashrate);
         update.putExtra("shares", shares);
         update.putExtra("threads", threads);
+        String phaseText = switching
+            ? "Switching safely to Gaza Sadaqah"
+            : phase == SadaqahSchedule.GAZA
+                ? "Gaza Sadaqah mining session"
+                : "Your mining session";
+        update.putExtra("phaseText", phaseText);
         update.putExtra("remaining", mining ? remainingMs() : 0L);
         sendBroadcast(update);
 
@@ -396,6 +402,7 @@ public class MiningService extends Service {
             .putString("hashrate", hashrate)
             .putInt("shares", shares)
             .putInt("threads", threads)
+            .putString("phaseText", phaseText)
             .putLong("remaining", mining ? remainingMs() : 0L)
             .apply();
     }
