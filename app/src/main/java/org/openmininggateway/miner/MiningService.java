@@ -122,7 +122,7 @@ public class MiningService extends Service {
             long elapsed = SystemClock.elapsedRealtime() - startedAt;
 
             if (elapsed >= LIMIT) {
-                finish("4-hour session completed");
+                finish("5-minute TEST session completed");
                 return;
             }
 
@@ -265,16 +265,50 @@ public class MiningService extends Service {
                     });
                 }
             } catch (Exception error) {
-                String message = error.getMessage();
-                handler.post(() -> {
-                    if (mining &&
-                        (phase == workerPhase ||
-                        (workerPhase == SadaqahSchedule.USER &&
-                         switching))) finish(
-                        "Mining error: " +
-                        (message == null ? "Unknown" : message)
-                    );
-                });
+                boolean expectedHandoff =
+                    active != null &&
+                    mining &&
+                    workerPhase == SadaqahSchedule.USER &&
+                    phase == SadaqahSchedule.USER &&
+                    switching;
+
+                if (expectedHandoff) {
+                    try {
+                        // Stop the previous wallet's process completely.
+                        if (active.isAlive()) {
+                            active.destroy();
+                        }
+
+                        if (!active.waitFor(
+                                5, java.util.concurrent.TimeUnit.SECONDS)) {
+                            active.destroyForcibly();
+                            active.waitFor();
+                        }
+
+                        // Existing finally block starts Gaza mining.
+                        handoffToGaza = true;
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        handler.post(() -> {
+                            if (mining) {
+                                finish("Wallet switch interrupted");
+                            }
+                        });
+                    }
+                } else {
+                    String message = error.getMessage();
+                    boolean startupFailed = active == null;
+                    handler.post(() -> {
+                        if (mining &&
+                            phase == workerPhase &&
+                            (!switching || startupFailed)) {
+                            finish(
+                                "Mining error: " +
+                                (message == null ? "Unknown" : message)
+                            );
+                        }
+                    });
+                }
             } finally {
                 // Clear only this worker's process.
                 // Never clear a newer mining process.
@@ -294,7 +328,7 @@ public class MiningService extends Service {
                         }
 
                         if (remainingMs() <= 0) {
-                            finish("4-hour session completed");
+                            finish("5-minute TEST session completed");
                             return;
                         }
 

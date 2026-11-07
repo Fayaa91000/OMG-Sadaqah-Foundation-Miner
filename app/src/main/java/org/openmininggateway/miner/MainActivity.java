@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         header.addView(logo, logoParams);
 
         TextView title = new TextView(this);
-        title.setText("OMG SADAQAH FOUNDATION");
+        title.setText("OMG SADAQAH TEST MODE");
         title.setGravity(Gravity.CENTER);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         title.setPadding(0, 8, 0, 6);
@@ -312,7 +312,7 @@ public class MainActivity extends Activity {
         };
 
         String[] initialValues = {
-            "—", "0", "04:00:00"
+            "—", "0", "00:05:00"
         };
 
         for (int i = 0; i < 3; i++) {
@@ -353,7 +353,7 @@ public class MainActivity extends Activity {
 
         TextView schedule = new TextView(this);
         schedule.setText(
-            "YOUR WALLET  3 HOURS  •  GAZA SADAQAH  1 HOUR"
+            "TEST: YOUR WALLET 2 MIN  •  GAZA 3 MIN"
         );
         schedule.setTextColor(Color.rgb(61, 226, 174));
         schedule.setTextSize(13);
@@ -389,14 +389,14 @@ public class MainActivity extends Activity {
         allocationBar.addView(
             userPart,
             new LinearLayout.LayoutParams(
-                0, barHeight, 3f
+                0, barHeight, 2f
             )
         );
 
         allocationBar.addView(
             gazaPart,
             new LinearLayout.LayoutParams(
-                0, barHeight, 1f
+                0, barHeight, 3f
             )
         );
 
@@ -408,9 +408,9 @@ public class MainActivity extends Activity {
             new android.widget.CheckBox(this);
         sadaqahConsent.setText(
             "I AGREE TO THE GAZA SADAQAH PROGRAM:\n" +
-            "3 hours mining for my wallet and " +
-            "1 hour for the Gaza Sadaqah wallet during " +
-            "a full 4-hour session (75% / 25% mining time). " +
+            "2 minutes mining for my wallet and " +
+            "3 minutes for the Gaza Sadaqah wallet during " +
+            "a 5-minute TEST session (40% / 60% mining time). " +
             "Rewards and shares are not guaranteed."
         );
         sadaqahConsent.setTextColor(Color.WHITE);
