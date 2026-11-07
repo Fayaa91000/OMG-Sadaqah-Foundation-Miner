@@ -35,12 +35,14 @@ public class MainActivity extends Activity {
     private volatile boolean closing = false;
 
     private TextView status;
-    private TextView countdown;
+    private TextView hashrateValue;
+    private TextView sharesValue;
+    private TextView timeValue;
+
     private android.widget.Spinner threadSelector;
     private int selectedThreads = 3;
     private EditText wallet;
     private android.widget.CheckBox sadaqahConsent;
-    private android.widget.CheckBox smartMining;
     private Button start;
     private Button stop;
 
@@ -55,7 +57,7 @@ public class MainActivity extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(40, 60, 40, 40);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
-        layout.setBackgroundColor(Color.rgb(14, 22, 35));
+        layout.setBackgroundColor(Color.rgb(10, 19, 31));
 
         android.widget.ImageView logo =
             new android.widget.ImageView(this);
@@ -68,10 +70,21 @@ public class MainActivity extends Activity {
         layout.addView(logo, logoParams);
 
         TextView title = new TextView(this);
-        title.setText("OMG SADAQAH MINER");
-        title.setTextSize(28);
+        title.setText("OMG SADAQAH FOUNDATION");
+        title.setGravity(Gravity.CENTER);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setPadding(0, 14, 0, 10);
+        title.setTextSize(24);
         title.setTextColor(Color.WHITE);
         layout.addView(title);
+
+        TextView subtitle = new TextView(this);
+        subtitle.setText("MONERO MINER  •  GAZA SADAQAH");
+        subtitle.setTextColor(Color.rgb(48, 218, 169));
+        subtitle.setTextSize(14);
+        subtitle.setGravity(Gravity.CENTER);
+        subtitle.setPadding(0, 0, 0, 16);
+        layout.addView(subtitle);
 
         TextView information = new TextView(this);
         information.setText(
@@ -87,11 +100,19 @@ public class MainActivity extends Activity {
         wallet.setSingleLine(true);
         wallet.setTextColor(Color.WHITE);
         wallet.setHintTextColor(Color.LTGRAY);
-        wallet.setHint("Your own Monero wallet address");
+        wallet.setHint("Enter your XMR receiving address");
+        wallet.setBackground(omgRounded("#1B3040", 15));
+        wallet.setPadding(22, 22, 22, 22);
+        wallet.setTextSize(16);
         layout.addView(wallet);
 
         Button pasteWallet = new Button(this);
-        pasteWallet.setText("PASTE WALLET ADDRESS");
+        pasteWallet.setText("Paste Wallet Address");
+        pasteWallet.setAllCaps(false);
+        pasteWallet.setBackground(
+            omgRounded("#224C58", 13)
+        );
+        pasteWallet.setTextColor(Color.WHITE);
         layout.addView(pasteWallet);
 
         pasteWallet.setOnClickListener(v -> {
@@ -125,7 +146,12 @@ public class MainActivity extends Activity {
         });
 
         Button walletGuide = new Button(this);
-        walletGuide.setText("GET MONERO WALLET - GUIDE");
+        walletGuide.setText("Get Monero Wallet  •  Guide");
+        walletGuide.setAllCaps(false);
+        walletGuide.setBackground(
+            omgRounded("#224C58", 13)
+        );
+        walletGuide.setTextColor(Color.WHITE);
         layout.addView(walletGuide);
 
         walletGuide.setOnClickListener(v ->
@@ -181,28 +207,35 @@ public class MainActivity extends Activity {
         threadSelector.setBackgroundColor(Color.WHITE);
         threadSelector.setPadding(12, 8, 12, 8);
         threadSelector.setSelection(Math.min(2, cpuLimit - 1));
+        threadSelector.setBackground(
+            omgRounded("#F4F7F8", 12)
+        );
         layout.addView(threadSelector);
 
-        smartMining = new android.widget.CheckBox(this);
-        smartMining.setText(
-            "SMART MINING - Conservative CPU preset (up to 2 threads)"
+        TextView threadHint = new TextView(this);
+        threadHint.setText(
+            "Higher CPU settings may increase heat and battery usage."
         );
-        smartMining.setTextColor(Color.WHITE);
-        smartMining.setTextSize(15);
-        smartMining.setButtonTintList(
-            android.content.res.ColorStateList.valueOf(
-                Color.rgb(25, 210, 145)
-            )
-        );
-        smartMining.setPadding(12, 14, 12, 14);
-        layout.addView(smartMining);
+        threadHint.setTextColor(Color.rgb(158, 178, 191));
+        threadHint.setTextSize(13);
+        threadHint.setPadding(0, 12, 0, 16);
+        layout.addView(threadHint);
 
-        smartMining.setOnCheckedChangeListener((button, checked) -> {
-            if (checked) {
-                threadSelector.setSelection(Math.min(1, cpuLimit - 1));
-            }
-            threadSelector.setEnabled(!checked);
-        });
+        LinearLayout dashboard = new LinearLayout(this);
+        dashboard.setOrientation(LinearLayout.VERTICAL);
+        dashboard.setBackground(omgRounded("#192D3F", 20));
+        dashboard.setPadding(20, 24, 20, 24);
+        dashboard.setElevation(5f);
+
+        TextView dashboardTitle = new TextView(this);
+        dashboardTitle.setText("LIVE MINING DASHBOARD");
+        dashboardTitle.setTextColor(Color.rgb(53, 220, 170));
+        dashboardTitle.setTextSize(14);
+        dashboardTitle.setTypeface(
+            null, android.graphics.Typeface.BOLD
+        );
+        dashboardTitle.setGravity(Gravity.CENTER);
+        dashboard.addView(dashboardTitle);
 
         status = new TextView(this);
         status.setText(
@@ -211,15 +244,114 @@ public class MainActivity extends Activity {
         status.setTextSize(18);
         status.setTextColor(Color.LTGRAY);
         status.setGravity(Gravity.CENTER);
-        layout.addView(status);
+        dashboard.addView(status);
 
-        countdown = new TextView(this);
-        countdown.setText("Session duration: 04:00:00");
-        countdown.setTextColor(Color.WHITE);
-        countdown.setTextSize(20);
-        countdown.setGravity(Gravity.CENTER);
-        countdown.setPadding(0, 16, 0, 16);
-        layout.addView(countdown);
+        LinearLayout statRow = new LinearLayout(this);
+        statRow.setOrientation(LinearLayout.HORIZONTAL);
+
+        hashrateValue = new TextView(this);
+        sharesValue = new TextView(this);
+        timeValue = new TextView(this);
+
+        String[] statLabels = {
+            "HASHRATE", "SHARES", "REMAINING"
+        };
+
+        TextView[] statValues = {
+            hashrateValue, sharesValue, timeValue
+        };
+
+        String[] initialValues = {
+            "—", "0", "04:00:00"
+        };
+
+        for (int i = 0; i < 3; i++) {
+            LinearLayout tile = new LinearLayout(this);
+            tile.setOrientation(LinearLayout.VERTICAL);
+            tile.setGravity(Gravity.CENTER);
+            tile.setBackground(omgRounded("#254455", 12));
+            tile.setPadding(4, 14, 4, 14);
+
+            TextView label = new TextView(this);
+            label.setText(statLabels[i]);
+            label.setTextSize(10);
+            label.setTextColor(Color.rgb(175, 205, 215));
+            label.setGravity(Gravity.CENTER);
+            tile.addView(label);
+
+            statValues[i].setText(initialValues[i]);
+            statValues[i].setTextSize(i == 2 ? 14 : 16);
+            statValues[i].setTextColor(Color.WHITE);
+            statValues[i].setTypeface(
+                null, android.graphics.Typeface.BOLD
+            );
+            statValues[i].setGravity(Gravity.CENTER);
+            statValues[i].setSingleLine(true);
+            statValues[i].setTextScaleX(0.90f);
+            tile.addView(statValues[i]);
+
+            LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(0, -2, 1f);
+            params.setMargins(3, 12, 3, 12);
+            statRow.addView(tile, params);
+        }
+
+        dashboard.addView(statRow);
+
+
+        layout.addView(dashboard);
+
+        TextView schedule = new TextView(this);
+        schedule.setText(
+            "YOUR WALLET  3 HOURS  •  GAZA SADAQAH  1 HOUR"
+        );
+        schedule.setTextColor(Color.rgb(61, 226, 174));
+        schedule.setTextSize(13);
+        schedule.setGravity(Gravity.CENTER);
+        schedule.setPadding(0, 20, 0, 16);
+        LinearLayout allocationBar =
+            new LinearLayout(this);
+        allocationBar.setOrientation(
+            LinearLayout.HORIZONTAL
+        );
+        allocationBar.setBackground(
+            omgRounded("#203743", 12)
+        );
+        allocationBar.setClipToOutline(true);
+
+        int barHeight = (int) (
+            12 * getResources()
+                .getDisplayMetrics().density
+        );
+
+        android.view.View userPart =
+            new android.view.View(this);
+        userPart.setBackgroundColor(
+            Color.rgb(23, 211, 151)
+        );
+
+        android.view.View gazaPart =
+            new android.view.View(this);
+        gazaPart.setBackgroundColor(
+            Color.rgb(246, 181, 65)
+        );
+
+        allocationBar.addView(
+            userPart,
+            new LinearLayout.LayoutParams(
+                0, barHeight, 3f
+            )
+        );
+
+        allocationBar.addView(
+            gazaPart,
+            new LinearLayout.LayoutParams(
+                0, barHeight, 1f
+            )
+        );
+
+        layout.addView(allocationBar);
+        layout.addView(schedule);
 
 
         sadaqahConsent =
@@ -239,21 +371,63 @@ public class MainActivity extends Activity {
             )
         );
         sadaqahConsent.setPadding(12, 16, 12, 16);
-        sadaqahConsent.setBackgroundColor(
-            Color.rgb(30, 48, 57)
+        sadaqahConsent.setBackground(
+            omgRounded("#203743", 16)
         );
         layout.addView(sadaqahConsent);
 
         start = new Button(this);
         start.setText("START MINING");
         start.setTextColor(Color.WHITE);
-        layout.addView(start);
+        start.setBackground(omgRounded("#118866", 15));
+        start.setTextSize(17);
+        start.setAllCaps(false);
+        start.setPadding(14, 22, 14, 22);
+        // Start button added to the action row below.
 
         stop = new Button(this);
         stop.setText("STOP MINING");
         stop.setTextColor(Color.WHITE);
         stop.setEnabled(false);
-        layout.addView(stop);
+        stop.setBackground(omgRounded("#A53B48", 15));
+        stop.setTextSize(17);
+        stop.setAllCaps(false);
+        stop.setPadding(14, 22, 14, 22);
+        LinearLayout actionRow =
+            new LinearLayout(this);
+
+        actionRow.setOrientation(
+            LinearLayout.HORIZONTAL
+        );
+
+        actionRow.setPadding(0, 18, 0, 18);
+
+        LinearLayout.LayoutParams startParams =
+            new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            );
+
+        LinearLayout.LayoutParams stopParams =
+            new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            );
+
+        int spacing = (int) (
+            6 * getResources()
+                .getDisplayMetrics().density
+        );
+
+        startParams.setMargins(0, 0, spacing, 0);
+        stopParams.setMargins(spacing, 0, 0, 0);
+
+        actionRow.addView(start, startParams);
+        actionRow.addView(stop, stopParams);
+
+        layout.addView(actionRow);
 
         start.setOnClickListener(v -> beginMining());
 
@@ -290,6 +464,19 @@ public class MainActivity extends Activity {
         setContentView(scroll);
     }
 
+
+    private android.graphics.drawable.GradientDrawable
+        omgRounded(String hexColor, int radiusDp) {
+
+        android.graphics.drawable.GradientDrawable bg =
+            new android.graphics.drawable.GradientDrawable();
+
+        bg.setColor(Color.parseColor(hexColor));
+        float density = getResources()
+            .getDisplayMetrics().density;
+        bg.setCornerRadius(radiusDp * density);
+        return bg;
+    }
 
     private void beginMining() {
         if (!sadaqahConsent.isChecked()) {
@@ -344,7 +531,6 @@ public class MainActivity extends Activity {
             stop.setEnabled(true);
             wallet.setEnabled(false);
             threadSelector.setEnabled(false);
-            smartMining.setEnabled(false);
             status.setText("Starting background mining...");
         } catch (Exception ex) {
             status.setText(
@@ -383,29 +569,29 @@ public class MainActivity extends Activity {
         start.setEnabled(!active);
         stop.setEnabled(active);
         wallet.setEnabled(!active);
-        threadSelector.setEnabled(!active && !smartMining.isChecked());
-        smartMining.setEnabled(!active);
+        threadSelector.setEnabled(!active);
 
         status.setText(
-            (active ? "Mining (" + threads + " threads)"
-                    : message) +
-            (active ? "\n" + phaseText : "") +
-            "\nHashrate: " + hashrate +
-            "\nAccepted shares: " + shares
+            active
+                ? phaseText + " | " + threads + " CPU threads"
+                : message
         );
 
-        if (active) {
-            long seconds = (remaining + 999L) / 1000L;
-            countdown.setText(String.format(
-                java.util.Locale.US,
-                "Time remaining: %02d:%02d:%02d",
-                seconds / 3600,
-                (seconds / 60) % 60,
-                seconds % 60
-            ));
-        } else {
-            countdown.setText("Session duration: 04:00:00");
-        }
+        hashrateValue.setText(active ? hashrate : "—");
+        sharesValue.setText(String.valueOf(shares));
+
+        long seconds = active
+            ? (remaining + 999L) / 1000L
+            : SadaqahConfig.TOTAL_SESSION_MS / 1000L;
+
+        timeValue.setText(String.format(
+            java.util.Locale.US,
+            "%02d:%02d:%02d",
+            seconds / 3600,
+            (seconds / 60) % 60,
+            seconds % 60
+        ));
+
     }
 
     private final Runnable stateTicker = new Runnable() {
