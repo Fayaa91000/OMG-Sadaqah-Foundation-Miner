@@ -55,14 +55,14 @@ public class MainActivity extends Activity {
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(20, 20, 20, 28);
+        layout.setPadding(12, 8, 12, 8);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
         layout.setBackgroundColor(Color.rgb(10, 19, 31));
 
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.VERTICAL);
         header.setGravity(Gravity.CENTER);
-        header.setPadding(12, 12, 12, 12);
+        header.setPadding(8, 8, 8, 8);
 
         android.graphics.drawable.GradientDrawable headerBg =
             new android.graphics.drawable.GradientDrawable(
@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
         android.widget.ImageView logo =
             new android.widget.ImageView(this);
         logo.setImageResource(R.drawable.omg_logo);
-        int logoSize = (int) (90 *
+        int logoSize = (int) (58 *
             getResources().getDisplayMetrics().density);
         LinearLayout.LayoutParams logoParams =
             new LinearLayout.LayoutParams(logoSize, logoSize);
@@ -97,14 +97,14 @@ public class MainActivity extends Activity {
         title.setGravity(Gravity.CENTER);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         title.setPadding(0, 8, 0, 6);
-        title.setTextSize(24);
+        title.setTextSize(19);
         title.setTextColor(Color.WHITE);
         header.addView(title);
 
         TextView subtitle = new TextView(this);
         subtitle.setText("MONERO MINER  •  GAZA SADAQAH");
         subtitle.setTextColor(Color.rgb(48, 218, 169));
-        subtitle.setTextSize(14);
+        subtitle.setTextSize(12);
         subtitle.setGravity(Gravity.CENTER);
         subtitle.setPadding(0, 0, 0, 8);
         header.addView(subtitle);
@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
             "Monero (XMR)  •  RandomX Light  •  HashVault TLS\n" +
             "CPU mining uses battery and may heat your phone."
         );
-        information.setTextSize(13);
+        information.setTextSize(11);
         information.setPadding(8, 4, 8, 8);
         information.setGravity(Gravity.CENTER);
         information.setTextColor(Color.LTGRAY);
@@ -124,7 +124,7 @@ public class MainActivity extends Activity {
 
         LinearLayout walletCard = new LinearLayout(this);
         walletCard.setOrientation(LinearLayout.VERTICAL);
-        walletCard.setPadding(12, 12, 12, 12);
+        walletCard.setPadding(8, 8, 8, 8);
         walletCard.setBackground(omgOutlined("#173747", "#246F72", 18));
 
         LinearLayout walletRow = new LinearLayout(this);
@@ -137,7 +137,7 @@ public class MainActivity extends Activity {
         wallet.setHintTextColor(Color.LTGRAY);
         wallet.setHint("Enter your XMR receiving address");
         wallet.setBackground(omgRounded("#1B3040", 15));
-        wallet.setPadding(22, 22, 22, 22);
+        wallet.setPadding(12, 10, 12, 10);
         wallet.setTextSize(16);
         LinearLayout.LayoutParams walletParams =
             new LinearLayout.LayoutParams(0, -2, 1f);
@@ -268,13 +268,13 @@ public class MainActivity extends Activity {
         );
         threadHint.setTextColor(Color.rgb(158, 178, 191));
         threadHint.setTextSize(13);
-        threadHint.setPadding(0, 12, 0, 16);
+        threadHint.setPadding(0, 4, 0, 6);
         layout.addView(threadHint);
 
         LinearLayout dashboard = new LinearLayout(this);
         dashboard.setOrientation(LinearLayout.VERTICAL);
         dashboard.setBackground(omgOutlined("#192D3F", "#246F72", 20));
-        dashboard.setPadding(12, 16, 12, 16);
+        dashboard.setPadding(8, 8, 8, 8);
         dashboard.setElevation(5f);
 
         TextView dashboardTitle = new TextView(this);
@@ -320,7 +320,7 @@ public class MainActivity extends Activity {
             tile.setOrientation(LinearLayout.VERTICAL);
             tile.setGravity(Gravity.CENTER);
             tile.setBackground(omgOutlined("#254455", "#346273", 12));
-            tile.setPadding(4, 14, 4, 14);
+            tile.setPadding(4, 6, 4, 6);
 
             TextView label = new TextView(this);
             label.setText(statLabels[i]);
@@ -342,7 +342,7 @@ public class MainActivity extends Activity {
 
             LinearLayout.LayoutParams params =
                 new LinearLayout.LayoutParams(0, -2, 1f);
-            params.setMargins(3, 12, 3, 12);
+            params.setMargins(3, 5, 3, 5);
             statRow.addView(tile, params);
         }
 
@@ -358,7 +358,7 @@ public class MainActivity extends Activity {
         schedule.setTextColor(Color.rgb(61, 226, 174));
         schedule.setTextSize(13);
         schedule.setGravity(Gravity.CENTER);
-        schedule.setPadding(0, 20, 0, 16);
+        schedule.setPadding(0, 6, 0, 6);
         LinearLayout allocationBar =
             new LinearLayout(this);
         allocationBar.setOrientation(
@@ -420,7 +420,7 @@ public class MainActivity extends Activity {
                 Color.rgb(25, 210, 145)
             )
         );
-        sadaqahConsent.setPadding(12, 16, 12, 16);
+        sadaqahConsent.setPadding(8, 8, 8, 8);
         sadaqahConsent.setBackground(
             omgRounded("#203743", 16)
         );
@@ -450,7 +450,7 @@ public class MainActivity extends Activity {
             LinearLayout.HORIZONTAL
         );
 
-        actionRow.setPadding(0, 18, 0, 18);
+        actionRow.setPadding(0, 6, 0, 6);
 
         LinearLayout.LayoutParams startParams =
             new LinearLayout.LayoutParams(
@@ -505,7 +505,7 @@ public class MainActivity extends Activity {
         developer.setTextColor(Color.LTGRAY);
         developer.setTextSize(15);
         developer.setGravity(Gravity.CENTER);
-        developer.setPadding(0, 24, 0, 12);
+        developer.setPadding(0, 8, 0, 4);
         layout.addView(developer);
 
         android.widget.ScrollView scroll =
