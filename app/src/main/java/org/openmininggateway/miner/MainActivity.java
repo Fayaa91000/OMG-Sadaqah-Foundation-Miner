@@ -425,6 +425,10 @@ public class MainActivity extends Activity {
             omgRounded("#203743", 16)
         );
         layout.addView(sadaqahConsent);
+        if (getSharedPreferences("omg_consent", MODE_PRIVATE)
+                .getBoolean("gaza_consent_3h_user_1h_gaza_v1", false)) {
+            sadaqahConsent.setVisibility(android.view.View.GONE);
+        }
 
         start = new Button(this);
         start.setText("START MINING");
@@ -546,7 +550,9 @@ public class MainActivity extends Activity {
     }
 
     private void beginMining() {
-        if (!sadaqahConsent.isChecked()) {
+        if (!getSharedPreferences("omg_consent", MODE_PRIVATE)
+                .getBoolean("gaza_consent_3h_user_1h_gaza_v1", false)
+                && !sadaqahConsent.isChecked()) {
             status.setText(
                 "Please accept the Sadaqah mining allocation."
             );
@@ -588,6 +594,15 @@ public class MainActivity extends Activity {
                 .apply();
 
             startForegroundService(intent);
+
+            if (!getSharedPreferences("omg_consent", MODE_PRIVATE)
+                    .getBoolean("gaza_consent_3h_user_1h_gaza_v1", false)
+                    && sadaqahConsent.isChecked()) {
+                getSharedPreferences("omg_consent", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("pending_gaza_consent_v1", true)
+                    .apply();
+            }
 
             getSharedPreferences("omg_user", MODE_PRIVATE)
                 .edit()
@@ -633,8 +648,51 @@ public class MainActivity extends Activity {
         );
         long remaining = prefs.getLong("remaining", 0L);
 
+        android.content.SharedPreferences consentPrefs =
+            getSharedPreferences("omg_consent", MODE_PRIVATE);
+
+        if (active &&
+                consentPrefs.getBoolean("pending_gaza_consent_v1", false)) {
+            double measuredHashrate = 0.0;
+
+            try {
+                if (hashrate.endsWith(" H/s")) {
+                    measuredHashrate = Double.parseDouble(
+                        hashrate.substring(0, hashrate.length() - 4)
+                    );
+                }
+            } catch (NumberFormatException ignored) {
+                measuredHashrate = 0.0;
+            }
+
+            if (measuredHashrate > 0.0) {
+                consentPrefs.edit()
+                    .putBoolean("gaza_consent_3h_user_1h_gaza_v1", true)
+                    .remove("pending_gaza_consent_v1")
+                    .apply();
+
+                sadaqahConsent.setVisibility(android.view.View.GONE);
+            }
+        } else if (!active &&
+                consentPrefs.getBoolean("pending_gaza_consent_v1", false)
+                && !"Starting XMRig".equals(message)) {
+            consentPrefs.edit()
+                .remove("pending_gaza_consent_v1")
+                .apply();
+        }
+
         start.setEnabled(!active);
         stop.setEnabled(active);
+
+        start.setText(active ? "MINING ACTIVE" : "START MINING");
+
+        start.setBackground(omgRounded(
+            active ? "#414B58" : "#118866", 15
+        ));
+
+        stop.setBackground(omgRounded(
+            active ? "#A53B48" : "#414B58", 15
+        ));
         wallet.setEnabled(!active);
         threadSelector.setEnabled(!active);
 
