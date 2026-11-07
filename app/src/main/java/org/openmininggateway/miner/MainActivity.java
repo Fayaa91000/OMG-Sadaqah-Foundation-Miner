@@ -55,9 +55,32 @@ public class MainActivity extends Activity {
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(40, 60, 40, 40);
+        layout.setPadding(20, 20, 20, 28);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
         layout.setBackgroundColor(Color.rgb(10, 19, 31));
+
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.VERTICAL);
+        header.setGravity(Gravity.CENTER);
+        header.setPadding(12, 12, 12, 12);
+
+        android.graphics.drawable.GradientDrawable headerBg =
+            new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                new int[] {
+                    Color.rgb(7, 58, 69),
+                    Color.rgb(10, 28, 45),
+                    Color.rgb(8, 18, 31)
+                }
+            );
+        headerBg.setCornerRadius(
+            20 * getResources().getDisplayMetrics().density
+        );
+        headerBg.setStroke(
+            (int) (1 * getResources().getDisplayMetrics().density),
+            Color.rgb(39, 178, 160)
+        );
+        header.setBackground(headerBg);
 
         android.widget.ImageView logo =
             new android.widget.ImageView(this);
@@ -67,34 +90,46 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams logoParams =
             new LinearLayout.LayoutParams(logoSize, logoSize);
         logoParams.gravity = Gravity.CENTER_HORIZONTAL;
-        layout.addView(logo, logoParams);
+        header.addView(logo, logoParams);
 
         TextView title = new TextView(this);
         title.setText("OMG SADAQAH FOUNDATION");
         title.setGravity(Gravity.CENTER);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
-        title.setPadding(0, 14, 0, 10);
+        title.setPadding(0, 8, 0, 6);
         title.setTextSize(24);
         title.setTextColor(Color.WHITE);
-        layout.addView(title);
+        header.addView(title);
 
         TextView subtitle = new TextView(this);
         subtitle.setText("MONERO MINER  •  GAZA SADAQAH");
         subtitle.setTextColor(Color.rgb(48, 218, 169));
         subtitle.setTextSize(14);
         subtitle.setGravity(Gravity.CENTER);
-        subtitle.setPadding(0, 0, 0, 16);
-        layout.addView(subtitle);
+        subtitle.setPadding(0, 0, 0, 8);
+        header.addView(subtitle);
 
         TextView information = new TextView(this);
         information.setText(
-            "\nMonero (RandomX Light) | HashVault TLS\n" +
-            "CPU mining uses battery and may heat your phone.\n" +
-            "Mining continues through the visible foreground service.\n"
+            "Mine for yourself. Share mining time with Gaza.\n" +
+            "Monero (XMR)  •  RandomX Light  •  HashVault TLS\n" +
+            "CPU mining uses battery and may heat your phone."
         );
+        information.setTextSize(13);
+        information.setPadding(8, 4, 8, 8);
         information.setGravity(Gravity.CENTER);
         information.setTextColor(Color.LTGRAY);
-        layout.addView(information);
+        header.addView(information);
+        layout.addView(header);
+
+        LinearLayout walletCard = new LinearLayout(this);
+        walletCard.setOrientation(LinearLayout.VERTICAL);
+        walletCard.setPadding(12, 12, 12, 12);
+        walletCard.setBackground(omgOutlined("#173747", "#246F72", 18));
+
+        LinearLayout walletRow = new LinearLayout(this);
+        walletRow.setOrientation(LinearLayout.HORIZONTAL);
+        walletRow.setGravity(Gravity.CENTER_VERTICAL);
 
         wallet = new EditText(this);
         wallet.setSingleLine(true);
@@ -104,16 +139,26 @@ public class MainActivity extends Activity {
         wallet.setBackground(omgRounded("#1B3040", 15));
         wallet.setPadding(22, 22, 22, 22);
         wallet.setTextSize(16);
-        layout.addView(wallet);
+        LinearLayout.LayoutParams walletParams =
+            new LinearLayout.LayoutParams(0, -2, 1f);
+        walletParams.setMargins(0, 0, 8, 0);
+        walletRow.addView(wallet, walletParams);
 
         Button pasteWallet = new Button(this);
-        pasteWallet.setText("Paste Wallet Address");
+        pasteWallet.setText("PASTE");
         pasteWallet.setAllCaps(false);
         pasteWallet.setBackground(
             omgRounded("#224C58", 13)
         );
         pasteWallet.setTextColor(Color.WHITE);
-        layout.addView(pasteWallet);
+        int pasteWidth = (int) (
+            88 * getResources().getDisplayMetrics().density
+        );
+        walletRow.addView(
+            pasteWallet,
+            new LinearLayout.LayoutParams(pasteWidth, -2)
+        );
+        walletCard.addView(walletRow);
 
         pasteWallet.setOnClickListener(v -> {
             android.content.ClipboardManager clipboard =
@@ -152,7 +197,12 @@ public class MainActivity extends Activity {
             omgRounded("#224C58", 13)
         );
         walletGuide.setTextColor(Color.WHITE);
-        layout.addView(walletGuide);
+        walletCard.addView(walletGuide);
+
+        LinearLayout.LayoutParams cardParams =
+            new LinearLayout.LayoutParams(-1, -2);
+        cardParams.setMargins(0, 16, 0, 16);
+        layout.addView(walletCard, cardParams);
 
         walletGuide.setOnClickListener(v ->
             new android.app.AlertDialog.Builder(this)
@@ -223,8 +273,8 @@ public class MainActivity extends Activity {
 
         LinearLayout dashboard = new LinearLayout(this);
         dashboard.setOrientation(LinearLayout.VERTICAL);
-        dashboard.setBackground(omgRounded("#192D3F", 20));
-        dashboard.setPadding(20, 24, 20, 24);
+        dashboard.setBackground(omgOutlined("#192D3F", "#246F72", 20));
+        dashboard.setPadding(12, 16, 12, 16);
         dashboard.setElevation(5f);
 
         TextView dashboardTitle = new TextView(this);
@@ -269,7 +319,7 @@ public class MainActivity extends Activity {
             LinearLayout tile = new LinearLayout(this);
             tile.setOrientation(LinearLayout.VERTICAL);
             tile.setGravity(Gravity.CENTER);
-            tile.setBackground(omgRounded("#254455", 12));
+            tile.setBackground(omgOutlined("#254455", "#346273", 12));
             tile.setPadding(4, 14, 4, 14);
 
             TextView label = new TextView(this);
@@ -475,6 +525,23 @@ public class MainActivity extends Activity {
         float density = getResources()
             .getDisplayMetrics().density;
         bg.setCornerRadius(radiusDp * density);
+        return bg;
+    }
+
+    private android.graphics.drawable.GradientDrawable
+        omgOutlined(String fill, String border, int radiusDp) {
+
+        android.graphics.drawable.GradientDrawable bg =
+            omgRounded(fill, radiusDp);
+
+        float density = getResources()
+            .getDisplayMetrics().density;
+
+        bg.setStroke(
+            Math.max(1, (int) density),
+            Color.parseColor(border)
+        );
+
         return bg;
     }
 
